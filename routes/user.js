@@ -4,6 +4,7 @@ const userRouter = Router();
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const z = require("zod");
+const bcrypt = require("bcrypt");
 
 
 const JWT_SECRET = "iloveeeeeyouuuuu";
@@ -11,10 +12,14 @@ const JWT_SECRET = "iloveeeeeyouuuuu";
 // signup
 userRouter.post("/signup", async (req, res) => {
   const requiredBody = z.object({
-    name: z
+    firstName: z
       .string()
-      .min(3, { message: "Name should minimun of 3 length" })
-      .max(50, { message: "Name Should maximum of 50 length" }),
+      .min(3, { message: "First Name should minimun of 3 length" })
+      .max(50, { message: "First Name Should maximum of 50 length" }),
+    lastName: z
+      .string()
+      .min(3, { message: "Last Name should minimun of 3 length" })
+      .max(50, { message: "Last Name Should maximum of 50 length" }),
     email: z
       .string()
       .min(3, { message: "Email should minimun of 3 length" })
@@ -54,10 +59,10 @@ userRouter.post("/signup", async (req, res) => {
     return;
   }
 
-  const name = req.body.name;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
   const email = req.body.email;
   const password = req.body.password;
-  const role = req.body.role;
 
 try{
   const user = await UserModel.findOne({
@@ -71,11 +76,13 @@ try{
     return;
   }
 
+  const hashedPassword = await bcrypt.hash(password,10);
+
   await UserModel.create({
-    name:name,
+    firstName:firstName,
+    lastName:lastName,
     email:email,
-    password:password,
-    role:role
+    password:hashedPassword,
   })
   res.json({
     msg:"Signed Up Successfully"
