@@ -4,6 +4,7 @@ const { userRouter } = require("./routes/user");
 const { courseRouter } = require("./routes/course");
 const { adminRouter } = require("./routes/admin");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const app = express();
 const port = 3000;
@@ -16,16 +17,15 @@ app.use(express.urlencoded({ extended: true }));
 // auth middleware
 const auth = (req, res, next) => {};
 
-app.use("/user",userRouter);
-app.use("/admin",adminRouter);
-app.use("/course",courseRouter);
+app.use("/user", userRouter);
+app.use("/admin", adminRouter);
+app.use("/course", courseRouter);
 
 const start = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://pradipcohort:mD0Fwov7Mc8tcJ3b@cluster0.kyuou9t.mongodb.net/course-selling-app"
-    );
-    console.log("Connected to MongoDB");
+    await mongoose
+      .connect(process.env.MONGO_URL)
+      .then(() => console.log("Connected to MongoDB"));
     app.listen(port, () =>
       console.log(`Server is listening to the port ${port}`)
     );
