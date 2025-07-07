@@ -18,7 +18,11 @@ const Course = new Schema({
     description: String,
     price: Number,
     imageUrl: String,
-    createrId: ObjectId
+    createrId: {
+        type : ObjectId,
+        ref : "Admin",
+        required:true
+    },
 })
 
 
@@ -34,8 +38,16 @@ const Admin = new Schema({
 
 //Purchase Model
 const Purchase = new Schema({
-    courseId : ObjectId,
-    userId : ObjectId
+    courseId : {
+        type : ObjectId,
+        ref : "Course",
+        required:true
+    },
+    userId : {
+        type : ObjectId,
+        ref : "User",
+        required : true
+    },
 })
 
 

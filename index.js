@@ -1,11 +1,9 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
-const z = require("zod");
 const { userRouter } = require("./routes/user");
 const { courseRouter } = require("./routes/course");
-const { adminRouter } = require("./routes/admin")
-const { UserModel, CourseModel ,AdminModel , PurchaseModel } = require("./db");
+const { adminRouter } = require("./routes/admin");
+const mongoose = require("mongoose");
 
 const app = express();
 const port = 3000;

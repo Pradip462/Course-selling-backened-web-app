@@ -1,6 +1,7 @@
 const { Router } = require("express");
-
+const mongoose = require("mongoose");
 const courseRouter = Router();
+const { CourseModel } = require("../db");
 
 
 // when purchasing the inputs
