@@ -6,12 +6,9 @@ const z = require("zod");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
-
 const { UserModel, CourseModel } = require("../db");
 const { authUserMiddleware } = require("../Middlewares/authUser");
-
-const JWT_SECRET = process.env.USER_JWT_SECRET_KEY;
-
+const { JWT_USER_SECRET } = require("../config");
 
 // signup
 userRouter.post("/signup", async (req, res) => {
@@ -44,7 +41,7 @@ userRouter.post("/signup", async (req, res) => {
       })
       .refine((val) => /[!@#$%^&*]/.test(val), {
         message: "Password must contain one Special Character",
-      })
+      }),
   });
 
   const parsedDataWithSuccess = requiredBody.safeParse(req.body);
@@ -57,7 +54,7 @@ userRouter.post("/signup", async (req, res) => {
     return;
   }
 
-  const { firstName , lastName , email , password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   try {
     const user = await UserModel.findOne({
@@ -92,29 +89,31 @@ userRouter.post("/signup", async (req, res) => {
 
 // login
 userRouter.post("/login", async (req, res) => {
-  const requiredBody = z.object({
-    email: z
-      .string()
-      .min(3, { message: "Email should minimun of 3 length" })
-      .max(50, { message: "Email Should maximum of 50 length" })
-      .email("The input should be email"),
-    password: z
-      .string()
-      .min(8, { message: "Password should minimun of 8 length" })
-      .max(30, { message: "Password Should maximum of 50 length" })
-      .refine((val) => /[A-Z]/.test(val), {
-        message: "Password must contain one Uppercase",
-      })
-      .refine((val) => /[a-z]/.test(val), {
-        message: "Password must contain one Lowercase",
-      })
-      .refine((val) => /[0-9]/.test(val), {
-        message: "Password must contain one Number",
-      })
-      .refine((val) => /[!@#$%^&*]/.test(val), {
-        message: "Password must contain one Special Character",
-      }),
-  }).strict();
+  const requiredBody = z
+    .object({
+      email: z
+        .string()
+        .min(3, { message: "Email should minimun of 3 length" })
+        .max(50, { message: "Email Should maximum of 50 length" })
+        .email("The input should be email"),
+      password: z
+        .string()
+        .min(8, { message: "Password should minimun of 8 length" })
+        .max(30, { message: "Password Should maximum of 50 length" })
+        .refine((val) => /[A-Z]/.test(val), {
+          message: "Password must contain one Uppercase",
+        })
+        .refine((val) => /[a-z]/.test(val), {
+          message: "Password must contain one Lowercase",
+        })
+        .refine((val) => /[0-9]/.test(val), {
+          message: "Password must contain one Number",
+        })
+        .refine((val) => /[!@#$%^&*]/.test(val), {
+          message: "Password must contain one Special Character",
+        }),
+    })
+    .strict();
 
   const parsedDataWithSuccess = requiredBody.safeParse(req.body);
   if (!parsedDataWithSuccess.success) {
@@ -125,41 +124,47 @@ userRouter.post("/login", async (req, res) => {
     return;
   }
 
+  const { email, password } = req.body;
 
-  const { email , password } = req.body;
+  try {
+    // now we have to extract the hashed password form the database
+    const user = await UserModel.findOne({ email });
 
-  // now we have to extract the hashed password form the database
-  const user = await UserModel.findOne({ email });
+    if (!user) {
+      res.status(403).json({
+        msg: "Incorrect Email",
+      });
+    }
 
-  if (!user) {
-    res.status(403).json({
-      msg: "Incorrect Email",
+    const hashedPassword = user.password;
+
+    const isCorrect = await bcrypt.compare(password, hashedPassword);
+
+    if (!isCorrect) {
+      res.status(403).json({
+        msg: "Incorrect Password",
+      });
+      return;
+    }
+
+    // when user enters both correct email and password
+    // now we need to generate token
+    const token = jwt.sign({ userId: user._id }, JWT_USER_SECRET);
+
+    res.json({
+      msg: "Successfully Logged In",
+      token: token,
+    });
+  } catch (err) {
+    console.log(`Error in the User login route : ${err}`);
+    res.status(500).json({
+      msg: "Internal Server Error during User login",
     });
   }
-
-  const hashedPassword = user.password;
-
-  const isCorrect = await bcrypt.compare(password, hashedPassword);
-
-  if (!isCorrect) {
-    res.status(403).json({
-      msg: "Incorrect Password",
-    });
-    return;
-  }
-
-  // when user enters both correct email and password
-  // now we need to generate token
-  const token = jwt.sign({ userId : user._id }, JWT_SECRET);
-
-  res.json({
-    msg: "Successfully Logged In",
-    token: token,
-  });
 });
 
 // my purchased course
-userRouter.get("/purchased-course",authUserMiddleware, async (req, res) => {
+userRouter.get("/purchased-course", authUserMiddleware, async (req, res) => {
   res.json(req.user);
 });
 

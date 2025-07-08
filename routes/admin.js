@@ -1,16 +1,14 @@
 const { Router } = require("express");
-const adminRouter = Router();
-const { AdminModel } = require("../db");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const z = require("zod");
+const adminRouter = Router();
 require("dotenv").config();
 
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET_KEY;
-
-// Admin Auth
-const adminAuth = async () => {};
+const { JWT_ADMIN_SECRET } = require("../config");
+const { AdminModel } = require("../db");
+const { authAdminMiddleware } = require("../Middlewares/authAdmin");
 
 adminRouter.post("/signup", async (req, res) => {
   const zodBody = z.object({
@@ -90,16 +88,91 @@ adminRouter.post("/signup", async (req, res) => {
   }
 });
 
-adminRouter.post("/signin", (req, res) => {});
+adminRouter.post("/login", async(req, res) => {
+  const requiredBody = z
+      .object({
+        email: z
+          .string()
+          .min(3, { message: "Email should minimun of 3 length" })
+          .max(50, { message: "Email Should maximum of 50 length" })
+          .email("The input should be email"),
+        password: z
+          .string()
+          .min(8, { message: "Password should minimun of 8 length" })
+          .max(30, { message: "Password Should maximum of 50 length" })
+          .refine((val) => /[A-Z]/.test(val), {
+            message: "Password must contain one Uppercase",
+          })
+          .refine((val) => /[a-z]/.test(val), {
+            message: "Password must contain one Lowercase",
+          })
+          .refine((val) => /[0-9]/.test(val), {
+            message: "Password must contain one Number",
+          })
+          .refine((val) => /[!@#$%^&*]/.test(val), {
+            message: "Password must contain one Special Character",
+          }),
+      })
+      .strict();
+  
+    const parsedDataWithSuccess = requiredBody.safeParse(req.body);
+    if (!parsedDataWithSuccess.success) {
+      res.status(403).json({
+        msg: "Incorrect Pattern in input",
+        error: parsedDataWithSuccess.error,
+      });
+      return;
+    }
+  
+    const { email, password } = req.body;
+  
+    try {
+      // now we have to extract the hashed password form the database
+      const admin = await AdminModel.findOne({ email });
+  
+      if (!admin) {
+        res.status(403).json({
+          msg: "Incorrect Email",
+        });
+      }
+  
+      const hashedPassword = admin.password;
+  
+      const isCorrect = await bcrypt.compare(password, hashedPassword);
+  
+      if (!isCorrect) {
+        res.status(403).json({
+          msg: "Incorrect Password",
+        });
+        return;
+      }
+  
+      // when admin enters both correct email and password
+      // now we need to generate token
+      const token = jwt.sign({ adminId: admin._id }, JWT_ADMIN_SECRET);
+  
+      res.json({
+        msg: "Successfully Logged In",
+        token: token,
+      });
+    } catch (err) {
+      console.log(`Error in the admin login route : ${err}`);
+      res.status(500).json({
+        msg: "Internal Server Error during admin login",
+      });
+    }
+});
 
 // admin can create a course
-adminRouter.post("/course", (req, res) => {});
+adminRouter.post("/course" , authAdminMiddleware , (req, res) => {});
 
 // change the course features like name,pricing
-adminRouter.put("/course", (req, res) => {});
+adminRouter.put("/course", authAdminMiddleware ,(req, res) => {});
 
 // get all the course
-adminRouter.put("/course/all", (req, res) => {});
+adminRouter.get("/course/all" , authAdminMiddleware , (req, res) => {
+  res.json(req.admin);
+});
 
 module.exports = {
   adminRouter,

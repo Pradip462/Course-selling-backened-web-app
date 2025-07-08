@@ -1,19 +1,17 @@
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../db");
 
-const JWT_SECRET = process.env.USER_JWT_SECRET_KEY;
-
+const { JWT_USER_SECRET } = require("../config");
 
 // auth middleware
 const authUserMiddleware = async (req, res, next) => {
   try {
-  const token = req.headers.authorization;
-  if(!token){
-    return res.status(401).json({ msg: "No token provided" });
-  }
-  const tokenToVerify = jwt.verify(token, JWT_SECRET);
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ msg: "No token provided" });
+    }
+    const tokenToVerify = jwt.verify(token, JWT_SECRET);
 
-  
     const user = await UserModel.findOne({
       _id: tokenToVerify.userId,
     });
@@ -34,7 +32,6 @@ const authUserMiddleware = async (req, res, next) => {
   }
 };
 
-
 module.exports = {
-    authUserMiddleware
-}
+  authUserMiddleware,
+};
