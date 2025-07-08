@@ -1,44 +1,17 @@
 const { Router } = require("express");
-const { UserModel, CourseModel } = require("../db");
 const userRouter = Router();
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const z = require("zod");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
-const { safeParse } = require("zod/v4-mini");
 
-const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
-// auth middleware
-const auth = async (req, res, next) => {
-  try {
-  const token = req.headers.authorization;
-  if(!token){
-    return res.status(401).json({ msg: "No token provided" });
-  }
-  const tokenToVerify = jwt.verify(token, JWT_SECRET);
+const { UserModel, CourseModel } = require("../db");
+const { authUserMiddleware } = require("../Middlewares/authUser");
 
-  
-    const user = await UserModel.findOne({
-      _id: tokenToVerify.userId,
-    });
+const JWT_SECRET = process.env.USER_JWT_SECRET_KEY;
 
-    if (!user) {
-      res.status(403).json({
-        msg: "Incorrect Credentials",
-      });
-      return;
-    }
-    req.user = user;
-    next();
-  } catch (err) {
-    console.log(`Error in the auth Middleware : ${err}`);
-    res.status(401).json({
-      msg: "Unauthorized: " + err.message,
-    });
-  }
-};
 
 // signup
 userRouter.post("/signup", async (req, res) => {
@@ -186,7 +159,7 @@ userRouter.post("/login", async (req, res) => {
 });
 
 // my purchased course
-userRouter.get("/purchased-course",auth, async (req, res) => {
+userRouter.get("/purchased-course",authUserMiddleware, async (req, res) => {
   res.json(req.user);
 });
 
