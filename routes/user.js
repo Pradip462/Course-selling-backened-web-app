@@ -11,9 +11,33 @@ const { safeParse } = require("zod/v4-mini");
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 // auth middleware
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
+  try {
+  const token = req.headers.authorization;
+  if(!token){
+    return res.status(401).json({ msg: "No token provided" });
+  }
+  const tokenToVerify = jwt.verify(token, JWT_SECRET);
 
+  
+    const user = await UserModel.findOne({
+      email: tokenToVerify.email,
+    });
 
+    if (!user) {
+      res.status(403).json({
+        msg: "Incorrect Credentials",
+      });
+      return;
+    }
+    req.user = user;
+    next();
+  } catch (err) {
+    console.log(`Error in the auth Middleware : ${err}`);
+    res.status(401).json({
+      msg: "Unauthorized: " + err.message,
+    });
+  }
 };
 
 // signup
@@ -126,11 +150,11 @@ userRouter.post("/login", async (req, res) => {
       .refine((val) => /[!@#$%^&*]/.test(val), {
         message: "Password must contain one Special Character",
       }),
-  });
+  }).strict();
 
   const parsedDataWithSuccess = requiredBody.safeParse(req.body);
   if (!parsedDataWithSuccess.success) {
-    res.json({
+    res.status(403).json({
       msg: "Incorrect Pattern in input",
       error: parsedDataWithSuccess.error,
     });
@@ -144,7 +168,7 @@ userRouter.post("/login", async (req, res) => {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
-    res.statu(403).json({
+    res.status(403).json({
       msg: "Incorrect Email",
     });
   }
@@ -162,17 +186,18 @@ userRouter.post("/login", async (req, res) => {
 
   // when user enters both correct email and password
   // now we need to generate token
-  const token = jwt.sign(email, JWT_SECRET);
+  const token = jwt.sign({ email }, JWT_SECRET);
 
   res.json({
     msg: "Successfully Logged In",
     token: token,
   });
-
 });
 
 // my purchased course
-userRouter.get("/purchased-course", async (req, res) => {});
+userRouter.get("/purchased-course",auth, async (req, res) => {
+  res.json(req.user);
+});
 
 module.exports = {
   userRouter,
