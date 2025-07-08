@@ -53,8 +53,8 @@ const Purchase = new Schema({
 
 const UserModel = mongoose.model('users',User);
 const CourseModel = mongoose.model('courses',Course);
-const AdminModel = mongoose.model('admin',Admin);
-const PurchaseModel = mongoose.model('purchase',Purchase);
+const AdminModel = mongoose.model('admins',Admin);
+const PurchaseModel = mongoose.model('purchases',Purchase);
 
 
 module.exports = {

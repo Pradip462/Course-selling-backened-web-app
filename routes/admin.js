@@ -1,3 +1,4 @@
+const express = require("express")
 const { Router } = require("express");
 const adminRouter = Router();
 const { AdminModel } = require("../db");
@@ -5,8 +6,6 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const z = require("zod");
-const { parse } = require("dotenv");
-const { email } = require("zod/v4-mini");
 require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
@@ -59,12 +58,12 @@ adminRouter.post("/signup", async (req, res) => {
 
   const { firstName, lastName, email, password } = req.body;
 
-  const existUser = AdminModel.findOne({
+  const existUser = await AdminModel.findOne({
     email: email,
   });
 
   if (existUser) {
-    res.status(403),
+    res.status(403).
       json({
         msg: "Admin Already exists in the database",
       });
