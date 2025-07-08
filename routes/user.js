@@ -21,7 +21,7 @@ const auth = async (req, res, next) => {
 
   
     const user = await UserModel.findOne({
-      email: tokenToVerify.email,
+      _id: tokenToVerify.userId,
     });
 
     if (!user) {
@@ -71,13 +71,7 @@ userRouter.post("/signup", async (req, res) => {
       })
       .refine((val) => /[!@#$%^&*]/.test(val), {
         message: "Password must contain one Special Character",
-      }),
-    // role: z
-    //   .enum(["Student", "Instructer", "Admin"], {
-    //     errorMap:() => ({
-    //         message: "Role must be student, instructor, or admin",
-    //     }),
-    //   }),
+      })
   });
 
   const parsedDataWithSuccess = requiredBody.safeParse(req.body);
@@ -90,10 +84,7 @@ userRouter.post("/signup", async (req, res) => {
     return;
   }
 
-  const firstName = req.body.firstName;
-  const lastName = req.body.lastName;
-  const email = req.body.email;
-  const password = req.body.password;
+  const { firstName , lastName , email , password } = req.body;
 
   try {
     const user = await UserModel.findOne({
@@ -161,8 +152,8 @@ userRouter.post("/login", async (req, res) => {
     return;
   }
 
-  const email = req.body.email;
-  const password = req.body.password;
+
+  const { email , password } = req.body;
 
   // now we have to extract the hashed password form the database
   const user = await UserModel.findOne({ email });
@@ -186,7 +177,7 @@ userRouter.post("/login", async (req, res) => {
 
   // when user enters both correct email and password
   // now we need to generate token
-  const token = jwt.sign({ email }, JWT_SECRET);
+  const token = jwt.sign({ userId : user._id }, JWT_SECRET);
 
   res.json({
     msg: "Successfully Logged In",
