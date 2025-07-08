@@ -14,8 +14,7 @@ app.use(express.json());
 // allows Express app to read data sent from HTML form ie(application/x-www-form-urlencoded)
 app.use(express.urlencoded({ extended: true }));
 
-// auth middleware
-const auth = (req, res, next) => {};
+
 
 app.use("/user", userRouter);
 app.use("/admin", adminRouter);
