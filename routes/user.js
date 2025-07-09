@@ -6,7 +6,7 @@ const z = require("zod");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
 
-const { UserModel, CourseModel } = require("../db");
+const { UserModel, CourseModel, PurchaseModel } = require("../db");
 const { authUserMiddleware } = require("../Middlewares/authUser");
 const { JWT_USER_SECRET } = require("../config");
 
@@ -165,7 +165,26 @@ userRouter.post("/login", async (req, res) => {
 
 // my purchased course
 userRouter.get("/purchased-course", authUserMiddleware, async (req, res) => {
-  res.json(req.user);
+  const userId = req.userId;
+  try {
+    const purchases = await PurchaseModel.find({ userId });
+
+    if (purchases.length === 0) {
+      return res.json({
+        msg: "You have not purchased any course",
+      });
+    }
+
+    return res.json({
+      msg: "These are all your purchased courses",
+      purchases,
+    });
+  } catch (err) {
+    console.log(`Error in the User purchased course route : ${err}`);
+    return res.status(500).json({
+      msg: "Internal Server Error during User login",
+    });
+  }
 });
 
 module.exports = {

@@ -10,7 +10,7 @@ const authUserMiddleware = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ msg: "No token provided" });
     }
-    const tokenToVerify = jwt.verify(token, JWT_SECRET);
+    const tokenToVerify = jwt.verify(token, JWT_USER_SECRET);
 
     const user = await UserModel.findOne({
       _id: tokenToVerify.userId,
@@ -23,6 +23,7 @@ const authUserMiddleware = async (req, res, next) => {
       return;
     }
     req.user = user;
+    req.userId = user._id;
     next();
   } catch (err) {
     console.log(`Error in the auth Middleware : ${err}`);
