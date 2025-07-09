@@ -175,6 +175,10 @@ userRouter.get("/purchased-course", authUserMiddleware, async (req, res) => {
       });
     }
 
+    const courseData = await CourseModel.findOne({
+      _id: { $in: purchases.map((x) => x.courseId) },
+    });
+
     return res.json({
       msg: "These are all your purchased courses",
       purchases,

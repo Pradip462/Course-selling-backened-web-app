@@ -9,6 +9,8 @@ courseRouter.post("/purchase", authUserMiddleware, async (req, res) => {
   const userId = req.userId;
   const courseId = req.body.courseId;
 
+  // Should Check that the user actually paid the price or not then allow 
+
   try {
     const sameUser = await UserModel.findOne({
       userId,
