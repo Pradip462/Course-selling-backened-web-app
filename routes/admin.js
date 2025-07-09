@@ -9,6 +9,7 @@ require("dotenv").config();
 const { JWT_ADMIN_SECRET } = require("../config");
 const { AdminModel, CourseModel } = require("../db");
 const { authAdminMiddleware } = require("../Middlewares/authAdmin");
+const { check } = require("zod/v4");
 
 adminRouter.post("/signup", async (req, res) => {
   const zodBody = z.object({
@@ -168,11 +169,11 @@ adminRouter.post("/course", authAdminMiddleware, async (req, res) => {
 
   try {
     const course = await CourseModel.create({
-      title : title,
-      description : description,
-      price : price,
-      imageUrl : imageUrl,
-      createrId : req.admin._id,
+      title: title,
+      description: description,
+      price: price,
+      imageUrl: imageUrl,
+      createrId: req.admin._id,
     });
     res.status(200).json({
       msg: "Course Created",
@@ -181,20 +182,70 @@ adminRouter.post("/course", authAdminMiddleware, async (req, res) => {
   } catch (err) {
     console.log(`Error during creating course by admin : ${err}`);
     res.status(500).json({
-      msg:"Internal Server Error"
-    })
+      msg: "Internal Server Error",
+    });
   }
 });
 
 // change or Edit the course features like name,pricing
-adminRouter.put("/course", authAdminMiddleware, (req, res) => {
-  const { title, description, price, imageUrl } = req.body;
-  
+adminRouter.put("/course", authAdminMiddleware, async (req, res) => {
+  //this below is from authAdminMiddleware
+  const adminId = req.adminId;
+  const { courseId, title, description, price, imageUrl } = req.body;
+  try {
+    //check does this courseId belongs to this admin
+
+    const checkCourse = await CourseModel.findOne({
+      _id: courseId,
+      createrId: adminId,
+    });
+
+    if (!checkCourse) {
+      res.status(403).json({
+        msg: "This is not your course you can not update this course",
+      });
+      return;
+    }
+
+    const course = await CourseModel.updateOne(
+      {
+        _id: courseId,
+        createrId: adminId,
+      },
+      {
+        $set: {
+          title,
+          description,
+          price,
+          imageUrl,
+        },
+      }
+    );
+
+    res.status(200).json({
+      msg:"Course Updated"
+    })
+  } catch (err) {
+    console.log(`Error during changing the course details : ${err}`);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
 });
 
 // get all the course
-adminRouter.get("/course/all", authAdminMiddleware, (req, res) => {
-  res.json(req.admin);
+adminRouter.get("/course/all", authAdminMiddleware, async (req, res) => {
+  //this below is from authAdminMiddleware
+  const adminId = req.adminId;
+  try {
+    const courses = await CourseModel.find({ createrId : adminId });
+    res.status(200).json(courses);
+  } catch (err) {
+    console.log(`Error during changing the course details : ${err}`);
+    res.status(500).json({
+      msg: "Internal Server Error",
+    });
+  }
 });
 
 module.exports = {

@@ -24,6 +24,7 @@ const authAdminMiddleware = async (req, res, next) => {
       return;
     }
     req.admin = admin;
+    req.adminId = admin._id;
     next();
   } catch (err) {
     console.log(`Error in the admin auth Middleware : ${err}`);
