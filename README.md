@@ -37,7 +37,7 @@ This backend provides REST APIs for managing courses, users and purchases for a 
 
 - Node.js
 - Express
-- (Database) — configure your DB in `db.js` (MongoDB / MySQL / Postgres supported by changing driver)
+- (Database) — configure your DB in `db.js` (MongoDB)
 - JWT for authentication
 - dotenv for environment variables
 - Other middlewares in `Middlewares/` (CORS, logger, validation, etc.)
