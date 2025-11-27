@@ -11,13 +11,7 @@ This repository contains the Node.js / Express backend for a course marketplace 
 - [Features](#features)  
 - [Tech stack](#tech-stack)  
 - [Repository structure](#repository-structure)  
-- [Getting started (local)](#getting-started-local)  
-- [Environment variables](#environment-variables)  
-- [Available scripts](#available-scripts)  
 - [API overview (example endpoints)](#api-overview-example-endpoints)  
-- [Testing](#testing)  
-- [Improvements / TODO](#improvements--todo)  
-- [License & Contact](#license--contact)
 
 ---
 
