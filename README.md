@@ -48,9 +48,37 @@ This backend provides REST APIs for managing courses, users and purchases for a 
 - dotenv for environment variables
 - Other middlewares in `Middlewares/` (CORS, logger, validation, etc.)
 
-> _Note:_ pick & document the actual DB you used (e.g., MongoDB / PostgreSQL). Update this README accordingly.
 
 ---
 
 ## Repository structure
+/ (root)
+├─ index.js # App entrypoint
+├─ db.js # Database connection
+├─ config.js # App configuration
+├─ .env.example # Example env variables
+├─ routes/ # API routes (users, courses, orders, auth etc.)
+├─ Middlewares/ # Reusable middleware (auth, logger, error handler)
+├─ package.json
+└─ README.md
 
+
+## API overview (example endpoints)
+
+POST /api/auth/register — Register a new user
+
+POST /api/auth/login — Login (returns JWT)
+
+GET /api/courses — List courses
+
+GET /api/courses/:id — Get course details
+
+POST /api/courses — Create new course (protected)
+
+PUT /api/courses/:id — Update course (protected)
+
+DELETE /api/courses/:id — Delete course (protected)
+
+POST /api/orders — Create purchase / order (protected)
+
+GET /api/users/me — Get current user profile (protected)
