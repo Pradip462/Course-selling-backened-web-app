@@ -17,7 +17,7 @@ This repository contains the Node.js / Express backend for a course marketplace 
 
 ## About
 
-This backend provides REST APIs for managing courses, users and purchases for a course marketplace. It is built with Node.js and Express, follows a modular routes + middleware structure, and is ready to be extended (connected to a front-end, payment gateway, or deployed to a cloud provider).
+This backend provides REST APIs for managing courses, users and purchases for a course marketplace. It is built with Node.js and Express, follows a modular routes + middleware structure, and is ready to be extended (connected to a front-end).
 
 ---
 
