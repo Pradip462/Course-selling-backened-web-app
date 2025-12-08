@@ -47,14 +47,15 @@ This backend provides REST APIs for managing courses, users and purchases for a 
 
 ## Repository structure
 / (root)
-├─ index.js # App entrypoint
-├─ db.js # Database connection
-├─ config.js # App configuration
-├─ .env.example # Example env variables
-├─ routes/ # API routes (users, courses, orders, auth etc.)
-├─ Middlewares/ # Reusable middleware (auth, logger, error handler)
+├─ index.js             # App entrypoint
+├─ db.js                # Database connection
+├─ config.js            # App configuration
+├─ .env.example         # Example environment variables
+├─ routes/              # API routes (users, courses, orders, auth etc.)
+├─ Middlewares/         # Reusable middleware (auth, logger, error handler)
 ├─ package.json
 └─ README.md
+
 
 
 ## API overview (example endpoints)
